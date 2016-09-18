@@ -1,0 +1,186 @@
+/*@font-face {
+    font-family: 'dragon_questregular';
+    src: url('../asset/dragonquestfc.eot');
+    src: url('../asset/dragonquestfc.eot?#iefix') format('embedded-opentype'),
+         url('../asset/dragonquestfc.woff') format('woff'),
+         url('../asset/DragonQuestFC.ttf') format('truetype'),
+         url('../asset/dragonquestfc.svg#dragon_questregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}*/
+
+
+*{
+  z-index    : 10;
+  margin     : 0 auto;
+  padding    :0;
+  /*font-family: "dragon_questregular";*/
+}
+
+html{
+  font-size       : 12pt;
+  background-color: black;
+  color           : white;
+  position        : relative;
+}
+
+#wrapper{
+  position: absolute;
+  width   : 800px;
+  height  : 640px;
+  top     : 20px;
+  left    : -70px;
+}
+
+ul{
+  list-style-type: none;
+}
+
+/*タイトル画面の設定*/
+#titleScene{
+  padding-top: 50px;
+}
+  #title{
+    font-size : 48pt;
+    text-align: center;
+    height    : 2em;
+  }
+
+  #titleScene #menu{
+    margin-top: 40px;
+    font-size : 36pt;
+    text-align: center;
+    /*position: relative;
+    left: 100px;
+    top: 20px;*/
+  }
+
+  #menu li{
+    padding: 30px;
+  }
+
+/*バトルシーン*/
+
+#battleScene{
+  position           : relative;
+  top                : 50px;
+  left               : 50px;
+  background-image   : url('../asset/stage.jpg');
+  width              : 640px;
+  height             : 440px;
+  background-repeat  : no-repeat;
+  background-size    : cover;
+  background-position: 50px 50px;
+}
+
+.select::before{
+  content : "＞";
+  position: relative;
+  top     : 0;
+  left    : -20px;
+}
+
+#StatusDiv{
+  position: absolute;
+  left    : 200px;
+  top     : 50px;
+  width   : 700px;
+	height  : 100px;
+}
+
+	#StatusDiv table{
+		margin : 5px;
+		float  : left;
+		width  : 5em;
+    height : 6em;
+	}
+
+	#StatusDiv th,td{
+		padding : 3px;
+	}
+
+	#StatusDiv th{
+		border-bottom : 2px solid;
+	}
+
+	#StatusDiv td.key{
+		text-align : left;
+	}
+
+  .showMP .key{
+    
+  }
+
+
+	#StatusDiv td.value{
+		text-align    : right;
+		padding-right : 8px;
+	}
+
+  #StatusDiv .death{
+    color: rgb(189, 39, 39);
+  }
+
+
+#enemyStatusDiv ul{
+    position: absolute;
+    width   : 20em;
+    height  : 2em;
+    top     : 360px;
+    left    : 300px;
+}
+
+  #enemyStatusDiv ul li{
+    /*height: 1em;
+    padding: 2em;*/
+    display: inline-block;
+  }
+
+  #enemyStatusDiv ul li:first-child{
+    padding-left: 2em;
+  }
+
+#enemyImageDiv{
+  z-index : 1;
+  position: absolute;
+  top     : 190px;
+  left    : 130px;
+}
+
+  #enemyImageDiv img{
+  }
+
+/*img#cry{
+}*/
+
+#drink{
+  position: relative;
+  max-width: 450px;
+  height   : auto;
+  /*top      : -110px;*/
+}
+
+#commandDiv ul {
+    position  : absolute;
+    left      : 80px;
+    top       : 280px;
+    width     :9em;
+    height    :auto;
+    text-align:center;
+}
+
+  #commandDiv ul #name{
+    border-bottom  : 4px solid;
+    padding        : 10px;
+  }
+
+#result{
+  position  : absolute;
+  top       : 330px;
+  left      : 120px;
+  width     : 20em;
+  height    : 3em;
+  padding   : 2em 4em;
+  text-align: center;
+}
