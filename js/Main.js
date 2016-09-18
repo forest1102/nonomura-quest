@@ -1,5 +1,6 @@
+/*global $ len TYPE Player Enemy SCENE SELECTOR setTalk frameTime Chr*/
 $(function() {
-
+  var i=0;
 
   window.TYPE = {
     'PLAYER': 0,
@@ -19,26 +20,12 @@ $(function() {
     'WRRAPPER'     : $('#wrapper'),
     'TITLESCENE'   : $('#titleScene'),
     'BATTLESCENE'  : $('#battleScene'),
-    'GAMEOVERSCENE':$('#gameoverScene')
+    'GAMEOVERSCENE': $('#gameoverScene')
   };
 
   window.SCENE = {
     'TITLE' : 0,
     'BATTLE': 1
-  };
-
-  window.ChrRef        = {
-    len    :[],
-    player :[],
-    enemy  :[],
-    forEach:function (f) {
-      for(i=0;i<len[TYPE.MAX];i=(i+1)>>>0){
-
-      }
-    },
-    at     :function (n) {
-      return ((n<this.len[TYPE.PLAYER])?player[n]:enemy[n-len[TYPE.PLAYER]]);
-    }
   };
 
   window.frameTime  = 1500;
@@ -55,8 +42,7 @@ $(function() {
   SELECTOR.RESULT_DIV.hide();
 
   window.gameScene=(function () {
-    var scene='title',
-    draw={
+    var  draw={
       'title':(function () {
         SELECTOR.BATTLESCENE.hide();
         SELECTOR.TITLESCENE.show();
@@ -84,7 +70,7 @@ $(function() {
     };
     return{
       'draw': draw
-    }
+    };
   })();
 
   window.audioPlay = function() {
