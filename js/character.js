@@ -7,12 +7,13 @@ $(function() {
       COM : 8,
     },
     BUFF = {
-      lowerAttack : 0,
-      lowerDefense: 1,
-      higherAttack: 2,
-      angry       : 3,
-      sleep       : 4,
-      MAX_NUM     : 5
+      lowerAttack   : 0,
+      lowerDefense  : 1,
+      higherAttack  : 2,
+      higherDefense : 3,
+      angry         : 4,
+      sleep         : 5,
+      MAX_NUM       : 6
     },
     IMGTYPE = {
       'CRY'  : 0,
@@ -91,8 +92,8 @@ $(function() {
     this.dexterity     = data.DEX;
 
     this.sayFlag       = false;
-
-    this.num           = 0;
+    
+    this.curCom        = 'noneAct';
 
     this.skillLen      = this.com.length;
 
@@ -151,6 +152,7 @@ $(function() {
 buffManager.prototype.calc = function() {
   this.attack = 0;
   this.defense = 0;
+  this.canAttack=true;
   var prev = this;
   this.buffs.forEach(function(data, i) {
     if (data.turn > 0) {
@@ -167,10 +169,15 @@ buffManager.prototype.calc = function() {
         case BUFF.higherAttack:
           prev.attack += data.x;
           break;
+          
+        case BUFF.higherDefense:
+          prev.defense += data.x;
+          break;
+        
 
         case BUFF.angry:
           prev.attack += data.x;
-          this.com = ['こうげき'];
+          prev.com = ['こうげき'];
           break;
         case BUFF.sleep:
           prev.canAttack = false;
@@ -208,6 +215,9 @@ buffManager.prototype.calc = function() {
                 'しかし外してしまった！');
       }
     },
+    'defense':function (magic) {
+      
+    },
     'heal': function(magic) {
       this.me.hp         += magic.point;
       this.me.updateFlag |= FLAGS.HP;
@@ -227,8 +237,28 @@ buffManager.prototype.calc = function() {
             +'こうげきりょくが' + magic.point + '上がった！  ');
     },
     'bribe':function (target,magic) {
-      return(self.name+'はお金を渡した'+
-             target.name+'は次のターンは攻撃できない。');
+      var self = this.me;
+      if (probability(this.me.DEX() * (1 - target.EVA()) * magic.rate)) {
+        target.buffData.add(new buff(BUFF.sleep, 0, magic.turn));
+        return (self.name + 'はお金を渡した</br>' +
+              target.name + 'は次のターンは攻撃できない。');
+      }
+      else{
+        return(self.name+'はお金を渡した</br>'+
+             'しかし、'+target.name+'にはこうかがなかった！');
+      }
+    },
+    'flash':function (target,magic) {
+      var self = this.me;
+      if (probability(this.me.DEX() * (1 - target.EVA()) * magic.rate)) {
+        target.buffData.add(new buff(BUFF.sleep, 0, magic.turn));
+        return (self.name + 'はカメラでフラッシュをたいた!</br>' +
+              target.name + 'は次のターンは攻撃できない。');
+      }
+      else{
+        return(self.name+'はカメラでフラッシュをたいた!</br>'+
+             'しかし、'+target.name+'にはこうかがなかった！');
+      }
     }
   };
 
@@ -243,7 +273,9 @@ buffManager.prototype.calc = function() {
     'なきさけぶ'  : 'cry',
     'ぶーすと'    : 'boost',
     'ちょうはつ'  : 'taunt',
-    'わいろ'      : 'bribe'
+    'わいろ'      : 'bribe',
+    'まほう'      : 'magic',
+    'フラッシュ'  : 'flash'
   };
 
   Character.prototype.ATK = function() {
@@ -263,7 +295,7 @@ buffManager.prototype.calc = function() {
   };
 
   Character.prototype.canAttack = function () {
-    return (!(this.isDeath())&&this.data.canAttack);
+    return ((!this.isDeath())&&this.buffData.canAttack);
   };
 
   Character.prototype.Deathact = function() {
@@ -293,7 +325,7 @@ buffManager.prototype.calc = function() {
   Character.prototype.act = function() {
     // var point = 0;
     var text = '',
-        command=this.toEnglish[this.com[this.num]],
+        command=this.curCom,
         curMagic=magic[command];
     switch (curMagic.type) {
       case 'single':
@@ -330,7 +362,13 @@ buffManager.prototype.calc = function() {
         console.error(command+'は攻撃範囲が定まっていません。');
     }
     // console.log(this.target);
+    
+    this.curCom='noneAct';
     return text + '<br>';
+  };
+  
+  Character.prototype.AI=function (text) {
+    this.curCom=this.toEnglish[text];
   };
 
   /*プレイヤーの初期設定*/
@@ -346,10 +384,10 @@ buffManager.prototype.calc = function() {
   Player.prototype.init = function() {
     // this.toEnglish['うおおおおお']='boost';
     if (!initflag) {
-      var c = '<li id="name">' + this.name + '</li>';
+      var c = '';
       for (var i = 0, max = this.com.length; i < max; i = 0 | (i + 1)) {
         // var c = $('<li>').text(this.com[i]).attr('id','com');
-        c += '<li class="com">' + this.com[i] + '</li>';
+        c += '<li class="magic">' + this.com[i] + '</li>';
       }
       this.comText = c;
       SELECTOR.STATUS_DIV.append(
@@ -397,18 +435,20 @@ buffManager.prototype.calc = function() {
     // console.log('攻撃対象: '+Chr[r].name);
     return r;
   };
-
+  
+  Enemy.prototype.AI = function () {
+    this.curCom=this.toEnglish[this.com[Math.floor(Math.random() * (this.skillLen))]];
+  };
+  
   Enemy.prototype.init = function() {
     this.toEnglish['みずをのむ'] = 'heal';
 
-    SELECTOR.CHOOSE_DIV.append(
-      '<div id="enemyStatusDiv">' +
-        '<ul class="frame ' + this.instance_name + '">' +
+    SELECTOR.ENEMY_STATUS.append(
+      '<ul class="frame ' + this.instance_name + '">' +
           '<li id="name"></li>' +
           '<li id="job"></li>' +
           '<li>1匹</li>' +
-        '</ul>' +
-      '</div>');
+      '</ul>');
 
     this.comAct.cry = function(target,magic) {
       // console.log('crying');
@@ -448,13 +488,11 @@ buffManager.prototype.calc = function() {
     };
   };
 
-  Enemy.prototype.Deathact = function() {
-    if (this.sayFlag) {
-      var text     = (this.name + 'をたおした！');
-      setTalk(text);
-      endFlag      =true;
-      this.sayFlag =true;
-    }
+  Enemy.prototype.Deathact = function () {
+    console.log(this.name + 'は死にました');
+    var text = (this.name + 'をたおした！');
+    setTalk(text);
+    endFlag = true;
     return 'clear';
   };
 });

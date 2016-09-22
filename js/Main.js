@@ -1,6 +1,12 @@
 /*global $ len TYPE Player Enemy SCENE SELECTOR setTalk frameTime Chr*/
 $(function() {
   var i=0;
+  
+  var COM_TYPE={
+    ATTACK  : 0,
+    MAGIC   : 1,
+    DEFFENSE:2
+  };
 
   window.TYPE = {
     'PLAYER': 0,
@@ -20,7 +26,9 @@ $(function() {
     'WRRAPPER'     : $('#wrapper'),
     'TITLESCENE'   : $('#titleScene'),
     'BATTLESCENE'  : $('#battleScene'),
-    'GAMEOVERSCENE': $('#gameoverScene')
+    'GAMEOVERSCENE': $('#gameoverScene'),
+    'MAGIC_LIST'   : $('#magicDiv ul'),
+    'ENEMY_STATUS' : $('#enemyStatusDiv')
   };
 
   window.SCENE = {
@@ -41,38 +49,38 @@ $(function() {
   var soundFlag;
   SELECTOR.RESULT_DIV.hide();
 
-  window.gameScene=(function () {
-    var  draw={
-      'title':(function () {
-        SELECTOR.BATTLESCENE.hide();
-        SELECTOR.TITLESCENE.show();
-      })(),
-      'main':function () {
-        SELECTOR.TITLESCENE.hide();
-        SELECTOR.BATTLESCENE.show();
-        soundFlag = confirm('音を出しますか？') || false;
-      },
-      'over':function () {
-        SELECTOR.RESULT_DIV.show();
-        setTalk('おおゆうしゃよ、</br>' +
-          'しんでしまうとはなさけない。。</br>');
-        setTimeout(function() {
-          alert('つづけるときはF５キーを押してね。');
-        }, frameTime);
-      },
-      'clear':function () {
-        SELECTOR.RESULT_DIV.show();
-        setTalk('パーティーは勝利した！');
-        setTimeout(function() {
-          endRoll();
-        }, frameTime);
+  var gameScene = (function () {
+    return {
+      'draw': {
+        'title': (function () {
+          SELECTOR.BATTLESCENE.hide();
+          SELECTOR.TITLESCENE.show();
+        })(),
+        'main': function () {
+          SELECTOR.TITLESCENE.hide();
+          SELECTOR.BATTLESCENE.show();
+          soundFlag = confirm('音を出しますか？') || false;
+        },
+        'over': function () {
+          SELECTOR.RESULT_DIV.show();
+          setTalk('おおゆうしゃよ、</br>' +
+            'しんでしまうとはなさけない。。</br>');
+          setTimeout(function () {
+            alert('つづけるときはF５キーを押してね。');
+          }, frameTime);
+        },
+        'clear': function () {
+          SELECTOR.RESULT_DIV.show();
+          setTalk('パーティーは勝利した！');
+          setTimeout(function () {
+            SELECTOR.BATTLESCENE.hide();
+            $('#credits').show();
+          }, frameTime);
+        }
       }
     };
-    return{
-      'draw': draw
-    };
   })();
-
+  
   window.audioPlay = function() {
     if (soundFlag) {
       SELECTOR.AUDIO_TAG[0].currentTime = 0;
@@ -148,35 +156,75 @@ $(function() {
       SELECTOR.RESULT.html(txt);
     }
   };
-
-  var endRoll=function () {
-
+  
+  var playerNext=function (cnt) {
+    if(cnt===len(TYPE.PLAYER)) return -1;
+    for(i=0;i<len(TYPE.PLAYER);i=(i+1)>>>0){
+      if(Chr[at(TYPE.PLAYER,i)].canAttack()){
+        // console.log(i+'番目');
+        cnt=(cnt-1)|0;
+        if(cnt<0){
+          // console.log(i);
+          return i;
+        }
+      }
+    }
+    return -1;
   };
 
-  var command = (function() {
+  var command = (function () {
     var cnt = 0,
-        idx =0;
+      idx = 0;
     return {
-      next: function(elem) {
-    var num = elem.index() - 1;
-    Chr[at(TYPE.PLAYER, idx)].num = num;
-    idx = playerFlag.arrivingAt((cnt = (cnt + 1) >>> 0));
-    if (idx === -1) {
-      // alert("コマンド入力完了！！");
-      Chr[at(TYPE.ENEMY, enemyIndex)].num = Math.floor(Math.random() * (Chr[at(TYPE.ENEMY, 0)].skillLen));
-      cnt = 0;
-      changeDiv(0);
-      return;
-    } else {
-      // console.log('次は'+idx+'番目のターン');
-      SELECTOR.COMLIST.html(Chr[at(TYPE.PLAYER, idx)].comText);
-    }
-  },
-  first: function() {
-    idx = playerFlag.arrivingAt(0);
-    SELECTOR.COMLIST.html(Chr[at(TYPE.PLAYER, idx)].comText);
-  }
-};
+      magicNext: function (elem) {
+        var text = elem.text();
+        SELECTOR.ENEMY_STATUS.show();
+        SELECTOR.MAGIC_LIST.hide();
+        Chr[at(TYPE.PLAYER, idx)].AI(text);
+        idx = playerNext((cnt = (cnt + 1)));
+        if (idx === -1) {
+          Chr[at(TYPE.ENEMY, enemyIndex)].AI();
+          cnt = 0;
+          changeDiv(0);
+          return;
+        }
+        else {
+          // SELECTOR.COMLIST.html(Chr[at(TYPE.PLAYER, idx)].comText);
+          $('#commandDiv #name').html(Chr[at(TYPE.PLAYER, idx)].name);
+        }
+      },
+      next: function (elem) {
+        var text = elem.text();
+        // console.log(idx);
+        if ((elem.index() - 1) === COM_TYPE.MAGIC) {
+          // console.log( Chr[at(TYPE.PLAYER,idx)].comText);
+          SELECTOR.MAGIC_LIST.html(Chr[at(TYPE.PLAYER, idx)].comText);
+          // console.log(SELECTOR.ENEMY_STATUS.text());
+          SELECTOR.ENEMY_STATUS.hide();
+          SELECTOR.MAGIC_LIST.show();
+        }
+        else {
+          SELECTOR.ENEMY_STATUS.show();
+          SELECTOR.MAGIC_LIST.hide();
+          Chr[at(TYPE.PLAYER, idx)].AI(text);
+          idx = playerNext((cnt = (cnt + 1)));
+          if (idx === -1) {
+            Chr[at(TYPE.ENEMY, enemyIndex)].AI();
+            cnt = 0;
+            changeDiv(0);
+            return;
+          }
+          else {
+            // SELECTOR.COMLIST.html(Chr[at(TYPE.PLAYER, idx)].comText);
+            $('#commandDiv #name').html(Chr[at(TYPE.PLAYER, idx)].name);
+          }
+        }
+      },
+      first: function () {
+        idx = playerNext(0);
+        $('#commandDiv #name').html(Chr[at(TYPE.PLAYER, idx)].name);
+      }
+    };
   })();
 
   function changeDiv(n) {
@@ -194,7 +242,7 @@ $(function() {
       return;
     }
 
-    if (!it.isDeath()) {
+    if (it.canAttack()) {
       setTalk(it.act());
       // console.log(it);
       if (it.target.isDeath()) {
@@ -206,7 +254,7 @@ $(function() {
             }, frameTime);
           }
           else{
-            gameScene.draw[state];
+            setTimeout(gameScene.draw[state],frameTime);
           }
 
         }, frameTime);
@@ -234,13 +282,15 @@ $(function() {
     return this;
   };
 
-  $('ul#menu li')
-    .mouseover(function() {
-      $(this).addClass('select');
-    })
-    .mouseout(function() {
-      $(this).removeClass('select');
-    });
+  $('ul#menu')
+    .on('mouseover', '.item',
+      function() {
+        $(this).addClass('select');
+      })
+    .on('mouseout', '.item',
+      function() {
+        $(this).removeClass('select');
+      });
 
   $("#button").click(function() {
     // scene     = SCENE.BATTLE;
@@ -259,6 +309,20 @@ $(function() {
     .on('click', '.com',
       function() {
         command.next($(this));
+      });
+      
+  $('#magicDiv ul')
+    .on('mouseover', '.magic',
+      function() {
+        $(this).addClass('select');
+      })
+    .on('mouseout', '.magic',
+      function() {
+        $(this).removeClass('select');
+      })
+    .on('click', '.magic',
+      function() {
+        command.magicNext($(this));
       });
 
   window.len = function(type) {
@@ -282,7 +346,7 @@ $(function() {
       Chr.push(new Enemy(json[1][0]));
       initflag = true;
       magic = json[2];
-      SELECTOR.COMLIST.html(Chr[at(TYPE.PLAYER, 0)].comText);
+      $('#commandDiv #name').html(Chr[at(TYPE.PLAYER,0)].name);
     })
     .fail(function(jqXHR, textStatus, errorThrown) {
       console.log("エラー：" + textStatus);
