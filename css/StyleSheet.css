@@ -74,9 +74,10 @@ ul {
 }
 
 #menu .select{
-  background-image: url("../asset/listIcon.gif");
+  background-image: url("../asset/arrowIcon.svg");
   background-repeat: no-repeat;
-  background-position: 70px 0px;
+  background-position: 70px 10px;
+  /*background-size: 2em;*/
 }
 
 
@@ -95,10 +96,12 @@ ul {
   margin: 0;
 }
 
-.select{
-  background-image: url("../asset/listIcon.gif");
+.magic.select,
+.com.select{
+  background-image: url("../asset/arrowIcon.svg");
   background-repeat: no-repeat;
-  background-position: 30px 10px;
+  background-position: 20px 10px;
+  /*background-size: 1em;*/
 }
 
 #StatusDiv {

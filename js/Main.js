@@ -333,7 +333,7 @@ $(function() {
     return begin[type] + index;
   };
 
-  $.getJSON('../asset/config.json')
+  $.getJSON('./asset/config.json')
     .done(function (json) {
       begin[TYPE.PLAYER] = 0;
       playerFlag.init(playerNum = begin[TYPE.ENEMY] = json[0].length);
@@ -349,8 +349,8 @@ $(function() {
       $('#commandDiv #name').html(Chr[at(TYPE.PLAYER,0)].name);
     })
     .fail(function(jqXHR, textStatus, errorThrown) {
-      console.log("エラー：" + textStatus);
-      console.log("テキスト：" + jqXHR.responseText);
+      console.error("エラー：" + textStatus);
+      console.error("テキスト：" + jqXHR.responseText);
     });
   SELECTOR.WRRAPPER.show();
 });
