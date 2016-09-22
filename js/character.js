@@ -62,14 +62,18 @@ $(function() {
     this.to            = _to;
 
     this.hp            = data.hp || 0;
+    
+    this.maxhp         = data.hp ||0;
 
     this.updateFlag    = 0;
 
     this.mp            = data.mp || 0;
+    
+    this.maxMP         = data.mp||0;
 
-    this.name          = data.name;
+    this.name          = data.name||'エラー';
 
-    this.instance_name = data.instance_name;
+    this.instance_name = data.instance_name||'empty';
 
     this.type          = _type;
 
@@ -77,7 +81,7 @@ $(function() {
 
     this.prev          = this;
 
-    this.com           = data.com;
+    this.com           = data.com||['なにもしない'];
 
     this.attack        = data.attack || 0;
 
@@ -85,11 +89,11 @@ $(function() {
 
     this.comAct        = new CommandAct(this);
 
-    this.defense       = data.defense;
+    this.defense       = data.defense||0;
 
-    this.evasion       = data.EVA;
+    this.evasion       = data.EVA||0;
 
-    this.dexterity     = data.DEX;
+    this.dexterity     = data.DEX||0;
 
     this.sayFlag       = false;
     
@@ -219,10 +223,12 @@ buffManager.prototype.calc = function() {
       
     },
     'heal': function(magic) {
+      var pHP=this.me.hp;
       this.me.hp         += magic.point;
+      if(this.me.hp>this.me.maxhp) this.me.hp=this.me.maxhp;
       this.me.updateFlag |= FLAGS.HP;
       return (this.me.name  + 'はかいふくをつかった！<br>' +
-        this.me.name + 'は' + magic.point + 'かいふくした！');
+        this.me.name + 'は' + (this.me.hp-pHP) + 'かいふくした！');
     },
     'noneAct': function() {
       return (this.me.name + 'はなにもしなかった！');
